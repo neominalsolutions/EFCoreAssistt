@@ -5,7 +5,9 @@ using Assistt.Data.DbContexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace EFCoreAssistt.Controllers
 {
@@ -25,49 +27,52 @@ namespace EFCoreAssistt.Controllers
       this.categoryRepository = categoryRepository;
     }
 
-    // abs -n 10 http://localhost:5001/api/products/sync-list & abs -n 10 http://localhost:5001/api/products/async-list
-    // 5.501
 
+    // ab -n 50 http://localhost:5001/api/products/async-list
 
     [HttpGet("async-list")]
-    public async Task<IActionResult> CreateListAsync()
+    public async Task<IActionResult> ListAsync()
     {
 
+        var task1 = await productRepository.ListAsync();
+        var task2 = await categoryRepository.ListAsync();
 
-      var result =   productRepository.Where().ToListAsync();
-      var result2 =  categoryRepository.Where().ToListAsync();
-
-      await Task.WhenAll(result, result2);
-
-
-      return Ok();
+        return Ok();
+   
     }
 
-    [HttpGet("async-list-await")]
-    public async Task<IActionResult> CreateListAwaitAsync()
+    [HttpGet("paralel-list")]
+    public async Task<IActionResult> ParalelListAsync()
     {
 
+      using (var context = new AssisttDbContext())
+      using (var context1 = new AssisttDbContext()) { 
+        var task1 = context1.Products.ToListAsync();
+        var task2 = context.Categories.ToListAsync();
 
-      var result = await productRepository.Where().ToListAsync();
-      var result2 = await categoryRepository.Where().ToListAsync();
+        await Task.WhenAll(task1, task2);
 
+       
 
-      return Ok();
+        return Ok();
+      }
+    
     }
 
 
     [HttpGet("sync-list")]
-    public async Task<IActionResult> CreateListsync()
+    public IActionResult List()
     {
 
       
-      var result = productRepository.Where().ToList();
-      var result2 =  categoryRepository.Where().ToList();
+      var result = productRepository.List();
+      var result2 = categoryRepository.List();
+
+  
 
       return Ok();
     }
 
-    //ab -n 50 -c 50 http://localhost:5001/api/products/sync & ab -n 50 -c 50 http://localhost:5001/api/products/async
 
     [HttpGet("async")]
     public  async Task<IActionResult> CreateAsync()
@@ -89,13 +94,11 @@ namespace EFCoreAssistt.Controllers
 
         // son işlemi veri tabanına yansıtmak için burada await kullandık
 
-      await  unitOfWork.CommitAsync();
-
-
-
+        await  unitOfWork.CommitAsync();
 
       return Ok();
     }
+
 
 
     [HttpGet("sync")]

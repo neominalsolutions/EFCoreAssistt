@@ -21,9 +21,9 @@ namespace Asisstt.Core.DataContracts
 
     Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> lambda);
 
-    Task<IQueryable<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> lambda = null);
+    Task<IQueryable<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> lambda);
 
- 
+    Task<IEnumerable<TEntity>> ListAsync();
 
   }
 }

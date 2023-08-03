@@ -20,7 +20,9 @@ namespace Asisstt.Core.DataContracts
 
     TEntity Find(Expression<Func<TEntity, bool>> lambda);
 
-    IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> lambda = null);
+    IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> lambda);
+
+    IEnumerable<TEntity> List();
 
   }
 }

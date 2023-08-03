@@ -1,5 +1,6 @@
 ﻿using Asisstt.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace Assistt.Data.DbContexts
       modelBuilder.Entity<Product>().Property(x => x.Name).HasColumnName("ProductName");
       //modelBuilder.Entity<Product>().Property(x => x.Name).HasColumnType("nvarchar(50)");
 
+
       base.OnModelCreating(modelBuilder);
     }
 
@@ -38,17 +40,10 @@ namespace Assistt.Data.DbContexts
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+      optionsBuilder.UseSqlServer("Server=(localDB)\\MyLocalDb;Database=EFCoreDB1;Trusted_Connection=True;MultipleActiveResultSets=True");
+
       base.OnConfiguring(optionsBuilder);
     }
 
-    public override int SaveChanges()
-    {
-      return base.SaveChanges();
-    }
-
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-      return base.SaveChangesAsync(cancellationToken);
-    }
   }
 }
