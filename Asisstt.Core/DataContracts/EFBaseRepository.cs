@@ -92,10 +92,11 @@ namespace Asisstt.Core.DataContracts
       return entity;
     }
 
-    public  Task CreateAsync(TEntity entity)
+    public Task CreateAsync(TEntity entity)
     {
        this.dbSet.AddAsync(entity);
       return Task.CompletedTask;
+      
     }
 
     public Task UpdateAsync(TEntity entity)
@@ -110,9 +111,9 @@ namespace Asisstt.Core.DataContracts
       return dbSet.AsNoTracking().Where(lambda);
     }
 
-    public async Task<IQueryable<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> lambda = null)
+    public Task<IQueryable<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> lambda = null)
     {
-      return await Task.FromResult(dbSet.Where(lambda).AsQueryable());
+      return Task.FromResult(dbSet.Where(lambda).AsQueryable());
     }
   }
 }

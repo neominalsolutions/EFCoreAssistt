@@ -40,5 +40,15 @@ namespace Assistt.Data.DbContexts
     {
       base.OnConfiguring(optionsBuilder);
     }
+
+    public override int SaveChanges()
+    {
+      return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+      return base.SaveChangesAsync(cancellationToken);
+    }
   }
 }

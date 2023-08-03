@@ -25,13 +25,31 @@ namespace EFCoreAssistt.Controllers
       this.categoryRepository = categoryRepository;
     }
 
+    // abs -n 10 http://localhost:5001/api/products/sync-list & abs -n 10 http://localhost:5001/api/products/async-list
+    // 5.501
+
 
     [HttpGet("async-list")]
     public async Task<IActionResult> CreateListAsync()
     {
-      
 
-     var result = (await productRepository.WhereAsync(x => x.Price > 10)).ToListAsync();
+
+      var result =   productRepository.Where().ToListAsync();
+      var result2 =  categoryRepository.Where().ToListAsync();
+
+      await Task.WhenAll(result, result2);
+
+
+      return Ok();
+    }
+
+    [HttpGet("async-list-await")]
+    public async Task<IActionResult> CreateListAwaitAsync()
+    {
+
+
+      var result = await productRepository.Where().ToListAsync();
+      var result2 = await categoryRepository.Where().ToListAsync();
 
 
       return Ok();
@@ -42,73 +60,67 @@ namespace EFCoreAssistt.Controllers
     public async Task<IActionResult> CreateListsync()
     {
 
-
-      var result = productRepository.Where(x => x.Price > 10).ToList();
-
+      
+      var result = productRepository.Where().ToList();
+      var result2 =  categoryRepository.Where().ToList();
 
       return Ok();
     }
 
+    //ab -n 50 -c 50 http://localhost:5001/api/products/sync & ab -n 50 -c 50 http://localhost:5001/api/products/async
+
     [HttpGet("async")]
-    public async Task<IActionResult> CreateAsync()
+    public  async Task<IActionResult> CreateAsync()
     {
-      Stopwatch s = new Stopwatch();
+
       var random = new Random();
-      
 
-      s.Start();
+     
+        var p = new Product();
+        p.Name = Guid.NewGuid().ToString();
+        p.SetPrice(random.Next(0, 100));
+        p.SetStock(random.Next(0, 100));
 
-      var p = new Product();
-      p.Name = Guid.NewGuid().ToString();
-      // p.Price = -34;
-      p.SetPrice(random.Next(0,100));
-      p.SetStock(random.Next(0, 100));
+        var c = new Category();
+        c.Name = Guid.NewGuid().ToString();
 
-      var c = new Category();
-      c.Name = Guid.NewGuid().ToString();
+        await productRepository.CreateAsync(p);
+        await categoryRepository.CreateAsync(c);
 
-       productRepository.CreateAsync(p);
-       categoryRepository.CreateAsync(c);
+        // son işlemi veri tabanına yansıtmak için burada await kullandık
+
+      await  unitOfWork.CommitAsync();
 
 
-      // son işlemi veri tabanına yansıtmak için burada await kullandık
-      int affectedRows =  await unitOfWork.CommitAsync();
 
-      s.Stop();
 
-      return Ok(new {time = s.ElapsedMilliseconds});
+      return Ok();
     }
 
 
     [HttpGet("sync")]
     public IActionResult CreateSenkron() 
     {
-      Stopwatch s = new Stopwatch();
-      s.Start();
+    
       var random = new Random();
 
-      var p = new Product();
-      p.Name = Guid.NewGuid().ToString();
-      // p.Price = -34;
-      p.SetPrice(random.Next(0, 100));
-      p.SetStock(random.Next(0, 100));
+        var p = new Product();
+        p.Name = Guid.NewGuid().ToString();
+        p.SetPrice(random.Next(0, 100));
+        p.SetStock(random.Next(0, 100));
 
-      var c = new Category();
-      c.Name = Guid.NewGuid().ToString();
+        var c = new Category();
+        c.Name = Guid.NewGuid().ToString();
 
-
-
-      // abs - n 10 - c 10 http://localhost:5234/api/products/sync
-
-      productRepository.Create(p);
-      categoryRepository.Create(c);
+        productRepository.Create(p);
+        categoryRepository.Create(c);
+  
       int affectedRows = unitOfWork.Commit();
 
-      // http://localhost:5234/api/Products/sync
 
-      s.Stop();
 
-      return Ok(new { time = s.ElapsedMilliseconds });
+
+      return Ok();
     }
 
   }

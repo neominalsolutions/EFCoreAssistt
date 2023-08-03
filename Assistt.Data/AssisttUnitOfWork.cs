@@ -52,11 +52,11 @@ namespace Assistt.Data
     {
       try
       {
-        return this.context.SaveChangesAsync(); // auto-Commit yöntemi
+        return  this.context.SaveChangesAsync(); // auto-Commit yöntemi
       }
       catch (Exception)
       {
-        return Task.FromResult<int>(0);
+        return  Task.FromResult<int>(0);
       }
     }
 
