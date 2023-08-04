@@ -41,17 +41,33 @@ namespace EFCoreAssistt.Controllers
    
     }
 
+    /*
+     * SELECT TOP(1) [p].[Id], [p].[CategoryId], [p].[Deleted], [p].[DeletedAt], [p].[DeletedBy], [p].[ProductName], [p].[Price], [p].[Stock]
+FROM [Product] AS [p]
+WHERE [p].[ProductName] LIKE N'%a%'
+     */
+
+    /*
+     
+    SELECT TOP(1) [p].[Id], [p].[CategoryId], [p].[Deleted], [p].[DeletedAt], [p].[DeletedBy], [p].[ProductName], [p].[Price], [p].[Stock]
+FROM [Product] AS [p]
+WHERE [p].[ProductName] LIKE N'%a%'
+     */
+
     [HttpGet("paralel-list")]
     public async Task<IActionResult> ParalelListAsync()
     {
-      //using (var context = new AssisttDbContext())
-      //using (var context1 = new AssisttDbContext())
-      //{
+      using (var context = new AssisttDbContext())
+      using (var context1 = new AssisttDbContext())
+      {
+        // tek kayıt çekerken önce FirstOrDefault() çoklu kayıt çekerken Where ifadesi kullanalım.
+        var c1 = context.Products.FirstOrDefault(x => x.Name.Contains("a"));
+        var c2 = context.Products.Where(x => x.Name.Contains("a")).FirstOrDefault();
 
-      //  var r1 = context.Products.Where(x => x.Deleted).OrderBy(x => x.Deleted).ToList();
-      //  var r2 = context.Products.ToList().Where(x => x.Deleted).OrderBy(x => x.Deleted);
+        //var r1 = context.Products.Where(x => x.Deleted).OrderBy(x => x.Deleted).ToList();
+        //var r2 = context.Products.ToList().Where(x => x.Deleted).OrderBy(x => x.Deleted);
 
-      //}
+      }
 
       // tek context instance ile birden falza async operasyonu (readOnly) işlemlerinde paralel olarak tüm sorguları işlemiyoruz. Bunu yapmak için her dbContext request birbirinden bağımsız olması lazım.
 
