@@ -86,8 +86,8 @@ namespace EFCoreAssistt.Controllers
     {
 
       
-      var result = productRepository.Query().AsNoTracking().ToList();
-      var result2 = categoryRepository.Query().AsNoTracking().ToList();
+      var result = productRepository.Query().ToList();
+      var result2 = categoryRepository.Query().ToList();
 
   
 
