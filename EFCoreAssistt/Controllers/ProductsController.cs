@@ -34,8 +34,8 @@ namespace EFCoreAssistt.Controllers
     public async Task<IActionResult> ListAsync()
     {
 
-        var task1 = await productRepository.Query().ToListAsync();
-        var task2 = await categoryRepository.Query().ToListAsync();
+        var task1 = await productRepository.Query().AsNoTracking().ToListAsync();
+        var task2 = await categoryRepository.Query().AsNoTracking().ToListAsync();
 
         return Ok();
    
@@ -44,19 +44,40 @@ namespace EFCoreAssistt.Controllers
     [HttpGet("paralel-list")]
     public async Task<IActionResult> ParalelListAsync()
     {
+      //using (var context = new AssisttDbContext())
+      //using (var context1 = new AssisttDbContext())
+      //{
 
+      //  var r1 = context.Products.Where(x => x.Deleted).OrderBy(x => x.Deleted).ToList();
+      //  var r2 = context.Products.ToList().Where(x => x.Deleted).OrderBy(x => x.Deleted);
+
+      //}
+
+      // tek context instance ile birden falza async operasyonu (readOnly) işlemlerinde paralel olarak tüm sorguları işlemiyoruz. Bunu yapmak için her dbContext request birbirinden bağımsız olması lazım.
+
+      //var task1 = productRepository.Query().ToListAsync();
+      //var task2 = categoryRepository.Query().ToListAsync();
+
+      //await Task.WhenAll(task1, task2);
+
+      //return Ok();
+
+      // her bir task için yeni dbContext instance açarak soruguları parelelde çalıştırabiliriz.
       using (var context = new AssisttDbContext())
-      using (var context1 = new AssisttDbContext()) { 
-        var task1 = context1.Products.ToListAsync();
-        var task2 = context.Categories.ToListAsync();
-
-        await Task.WhenAll(task1, task2);
-
+      using (var context1 = new AssisttDbContext())
+      {
        
+
+        var task1 = context1.Products.AsNoTracking().ToListAsync();
+        var task2 = context.Categories.AsNoTracking().ToListAsync();
+
+        await Task.WhenAny(task1, task2);
+
+
 
         return Ok();
       }
-    
+
     }
 
 
@@ -65,8 +86,8 @@ namespace EFCoreAssistt.Controllers
     {
 
       
-      var result = productRepository.Query().ToList();
-      var result2 = categoryRepository.Query().ToList();
+      var result = productRepository.Query().AsNoTracking().ToList();
+      var result2 = categoryRepository.Query().AsNoTracking().ToList();
 
   
 
