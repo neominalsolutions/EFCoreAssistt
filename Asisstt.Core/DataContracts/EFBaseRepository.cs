@@ -114,7 +114,7 @@ namespace Asisstt.Core.DataContracts
 
     public IQueryable<TEntity> Query()
     {
-      return dbSet;
+      return dbSet.AsNoTracking();
     }
 
  

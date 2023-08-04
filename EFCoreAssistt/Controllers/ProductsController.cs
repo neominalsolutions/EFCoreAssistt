@@ -34,8 +34,8 @@ namespace EFCoreAssistt.Controllers
     public async Task<IActionResult> ListAsync()
     {
 
-        var task1 = await productRepository.Query().AsNoTracking().ToListAsync();
-        var task2 = await categoryRepository.Query().AsNoTracking().ToListAsync();
+        var task1 = await productRepository.Query().ToListAsync();
+        var task2 = await categoryRepository.Query().ToListAsync();
 
         return Ok();
    
@@ -68,8 +68,8 @@ namespace EFCoreAssistt.Controllers
       {
        
 
-        var task1 = context1.Products.AsNoTracking().ToListAsync();
-        var task2 = context.Categories.AsNoTracking().ToListAsync();
+        var task1 = context1.Products.ToListAsync();
+        var task2 = context.Categories.ToListAsync();
 
         await Task.WhenAny(task1, task2);
 
