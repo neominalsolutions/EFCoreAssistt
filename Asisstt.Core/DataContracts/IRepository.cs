@@ -22,7 +22,7 @@ namespace Asisstt.Core.DataContracts
 
     IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> lambda);
 
-    IEnumerable<TEntity> List();
+    IQueryable<TEntity> Query();
 
   }
 }

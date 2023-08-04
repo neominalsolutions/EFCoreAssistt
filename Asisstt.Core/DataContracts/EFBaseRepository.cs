@@ -112,20 +112,14 @@ namespace Asisstt.Core.DataContracts
       return dbSet.AsNoTracking().Where(lambda);
     }
 
-    public Task<IQueryable<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> lambda)
+    public IQueryable<TEntity> Query()
     {
-      return Task.FromResult(dbSet.AsNoTracking().Where(lambda).AsQueryable());
+      return dbSet;
     }
 
-    public IEnumerable<TEntity> List()
-    {
-      return dbSet.ToList();
-    }
+ 
 
-    public async Task<IEnumerable<TEntity>> ListAsync()
-    {
-      return await  dbSet.ToListAsync();
 
-    }
+   
   }
 }

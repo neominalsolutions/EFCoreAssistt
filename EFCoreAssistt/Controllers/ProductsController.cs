@@ -28,14 +28,14 @@ namespace EFCoreAssistt.Controllers
     }
 
 
-    // ab -n 50 http://localhost:5001/api/products/async-list
+    // ab -n 50 http://localhost:5001/api/products/paralel-list & ab -n 50 http://localhost:5001/api/products/async-list & ab -n 50 http://localhost:5001/api/products/sync-list
 
     [HttpGet("async-list")]
     public async Task<IActionResult> ListAsync()
     {
 
-        var task1 = await productRepository.ListAsync();
-        var task2 = await categoryRepository.ListAsync();
+        var task1 = await productRepository.Query().ToListAsync();
+        var task2 = await categoryRepository.Query().ToListAsync();
 
         return Ok();
    
@@ -65,8 +65,8 @@ namespace EFCoreAssistt.Controllers
     {
 
       
-      var result = productRepository.List();
-      var result2 = categoryRepository.List();
+      var result = productRepository.Query().ToList();
+      var result2 = categoryRepository.Query().ToList();
 
   
 
