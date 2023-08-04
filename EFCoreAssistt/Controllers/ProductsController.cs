@@ -2,6 +2,8 @@
 using Asisstt.Core.Models;
 using Asisstt.Core.Repositories;
 using Assistt.Data.DbContexts;
+using Assistt.Data.Identity;
+using Assistt.Data.UnitOfWorks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,14 +19,18 @@ namespace EFCoreAssistt.Controllers
   {
     private readonly AssisttDbContext db;
     private readonly IProductRepository productRepository;
-    private readonly IUnitOfWork unitOfWork;
+    private readonly IAssisttUnitOfWork asistUnitOfWork;
+    private readonly IMultipleContextUnitOfWork multiContextUnitOfWork;
     private readonly ICategoryRepository categoryRepository;
-    public ProductsController(AssisttDbContext db, IProductRepository productRepository, IUnitOfWork unitOfWork, ICategoryRepository categoryRepository)
+    private readonly AssisttIdentityDbContext identityDb;
+    public ProductsController(AssisttDbContext db, IProductRepository productRepository, IAssisttUnitOfWork asistUnitOfWork, ICategoryRepository categoryRepository, AssisttIdentityDbContext assisttIdentityDbContext, IMultipleContextUnitOfWork multipleContextUnitOfWork)
     {
       this.db = db;
       this.productRepository = productRepository;
-      this.unitOfWork = unitOfWork;
+      this.asistUnitOfWork = asistUnitOfWork;
       this.categoryRepository = categoryRepository;
+      this.identityDb = assisttIdentityDbContext;
+      this.multiContextUnitOfWork = multipleContextUnitOfWork;
     }
 
 
@@ -40,6 +46,8 @@ namespace EFCoreAssistt.Controllers
         return Ok();
    
     }
+
+
 
     /*
      * SELECT TOP(1) [p].[Id], [p].[CategoryId], [p].[Deleted], [p].[DeletedAt], [p].[DeletedBy], [p].[ProductName], [p].[Price], [p].[Stock]
@@ -81,8 +89,9 @@ WHERE [p].[ProductName] LIKE N'%a%'
       // her bir task için yeni dbContext instance açarak soruguları parelelde çalıştırabiliriz.
       using (var context = new AssisttDbContext())
       using (var context1 = new AssisttDbContext())
+      using (var identityContext = new AssisttIdentityDbContext())
       {
-       
+        var task3 = identityContext.Roles.ToList();
 
         var task1 = context1.Products.ToListAsync();
         var task2 = context.Categories.ToListAsync();
@@ -102,7 +111,7 @@ WHERE [p].[ProductName] LIKE N'%a%'
     {
 
       
-      var result = productRepository.Query().ToList();
+      var result = productRepository.Query().IgnoreQueryFilters().ToList();
       var result2 = categoryRepository.Query().ToList();
 
   
@@ -131,7 +140,21 @@ WHERE [p].[ProductName] LIKE N'%a%'
 
         // son işlemi veri tabanına yansıtmak için burada await kullandık
 
-        await  unitOfWork.CommitAsync();
+        await  asistUnitOfWork.CommitAsync();
+       
+     
+
+      return Ok();
+    }
+
+    [HttpDelete]
+    public IActionResult Delete()
+    {
+      // aşağıdaki sorgu merkezi olarak yönetilebilir olmalı.
+      var plist = productRepository.Where(x => x.Deleted == false).ToList();
+
+      productRepository.Delete("0b1cf7cd-8f51-4f59-8933-2f04d566373f");
+      asistUnitOfWork.Commit();
 
       return Ok();
     }
@@ -155,10 +178,30 @@ WHERE [p].[ProductName] LIKE N'%a%'
         productRepository.Create(p);
         categoryRepository.Create(c);
   
-      int affectedRows = unitOfWork.Commit();
+      int affectedRows = asistUnitOfWork.Commit();
 
 
 
+
+      return Ok();
+    }
+
+    [HttpGet("multipleUnitOfWork")]
+    public IActionResult MultipleContextUnitOfWork()
+    {
+      var role = new AppRole(); // IdentityContext
+      role.Id = Guid.NewGuid().ToString();
+      role.Name = "Manager";
+
+      identityDb.Add(role); 
+
+      var c = new Category(); // AppContext
+      c.Name = "LKategori1";
+      categoryRepository.Create(c);
+
+
+
+      this.multiContextUnitOfWork.Commit();
 
       return Ok();
     }

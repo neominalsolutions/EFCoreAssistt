@@ -32,6 +32,9 @@ namespace Assistt.Data.DbContexts
       modelBuilder.Entity<Product>().Property(x => x.Name).HasColumnName("ProductName");
       //modelBuilder.Entity<Product>().Property(x => x.Name).HasColumnType("nvarchar(50)");
 
+      // Query Filter özelliği
+      modelBuilder.Entity<Product>().HasQueryFilter(x => x.Deleted == false);
+
 
       base.OnModelCreating(modelBuilder);
     }
@@ -43,6 +46,31 @@ namespace Assistt.Data.DbContexts
       optionsBuilder.UseSqlServer("Server=(localDB)\\MyLocalDb;Database=EFCoreDB1;Trusted_Connection=True;MultipleActiveResultSets=True");
 
       base.OnConfiguring(optionsBuilder);
+    }
+
+    public override int SaveChanges()
+    {
+      foreach (EntityEntry entry in ChangeTracker.Entries())
+      {
+        if(entry.State == EntityState.Deleted)
+        {
+          if (entry.Entity is IDeleteEntity)
+          {
+            entry.State = EntityState.Modified;
+
+            var entity = ((IDeleteEntity)entry.Entity);
+            entity.DeletedAt = DateTime.Now;
+            entity.Deleted = true;
+          }
+        }
+      }
+
+      return base.SaveChanges();
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+      return base.SaveChangesAsync(cancellationToken);
     }
 
   }
